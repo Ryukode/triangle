@@ -1,8 +1,7 @@
 mod buffers;
-
+mod mesh;
 
 use std::sync::Arc;
-use rand::random;
 
 use wgpu::util::DeviceExt;
 use winit::application::ApplicationHandler;
@@ -19,7 +18,7 @@ struct State<'a> {
     size: winit::dpi::PhysicalSize<u32>,
     render_pipeline: wgpu::RenderPipeline,
     window: Arc<Window>,
-    vertex_buffer: buffers::VertexBuffer, 
+    mesh: mesh::Mesh, 
 }
 
 impl<'a> State<'a> {
@@ -105,7 +104,7 @@ impl<'a> State<'a> {
             size,
             render_pipeline,
             window,
-            vertex_buffer: State::get_vertexbuffer(),
+            mesh: State::get_mesh(),    
         } 
     }
 
@@ -144,13 +143,13 @@ impl<'a> State<'a> {
 
             let vertex_buffer = self.device.create_buffer_init(&wgpu::util::BufferInitDescriptor{
                 label: Some("Vertex Buffer"),
-                contents: bytemuck::cast_slice(&self.vertex_buffer.get_vertices()),
+                contents: bytemuck::cast_slice(&self.mesh.vb().get_vertices()),
                 usage: wgpu::BufferUsages::VERTEX,
             });
 
             render_pass.set_vertex_buffer(0, vertex_buffer.slice(..));
             render_pass.set_pipeline(&self.render_pipeline);
-            render_pass.draw(0..self.vertex_buffer.get_vertices().len() as u32, 0..1);
+            render_pass.draw(0..self.mesh.vb().get_vertices().len() as u32, 0..1);
         }
 
         self.queue.submit(Some(encoder.finish()));
@@ -160,15 +159,15 @@ impl<'a> State<'a> {
     }
 
     fn update(&mut self) {
-       self.vertex_buffer.update();
+       self.mesh.vb().update();
     }
 
-    fn get_vertexbuffer() -> buffers::VertexBuffer {
-        let mut vertex_buffer: buffers::VertexBuffer = buffers::VertexBuffer::new(); 
+    fn get_mesh() -> mesh::Mesh {
+        let mut mesh: mesh::Mesh = mesh::Mesh::new(); 
         for _i in 0..=2 {
-            vertex_buffer.add_vertex(buffers::Vertex::new());
+            mesh.vb().add_vertex(buffers::Vertex::new());
         }
-        vertex_buffer
+        mesh
     }
 }
 
