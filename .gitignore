@@ -1,0 +1,10 @@
+# Compiled files
+/target/
+
+# Backup and misc files
+**/*.rs.bk
+*.swp
+*.swo
+
+# Cargo specific
+Cargo.lock
