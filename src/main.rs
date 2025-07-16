@@ -1,3 +1,6 @@
+mod buffers;
+
+
 use std::sync::Arc;
 use rand::random;
 
@@ -7,25 +10,6 @@ use winit::event::WindowEvent;
 use winit::event_loop::{ActiveEventLoop, ControlFlow, EventLoop};
 use winit::window::{Window, WindowId};
 
-#[repr(C)]
-#[derive(Copy, Clone, bytemuck::Pod, bytemuck::Zeroable)]
-struct Vertex {
-    pos: [f32; 2],
-    color: [f32; 4],
-}
-
-
-impl Vertex {
-    /// Layout to use with a buffer whose contents are a `[Vertex]`.
-    pub const LAYOUT: wgpu::VertexBufferLayout<'static> = wgpu::VertexBufferLayout {
-        array_stride: size_of::<Self>() as wgpu::BufferAddress,
-        step_mode: wgpu::VertexStepMode::Vertex,
-        attributes: &wgpu::vertex_attr_array![
-            0 => Float32x2,
-            1 => Float32x4,
-        ],
-    };
-}
 
 struct State<'a> {
     surface: wgpu::Surface<'a>,
@@ -35,8 +19,7 @@ struct State<'a> {
     size: winit::dpi::PhysicalSize<u32>,
     render_pipeline: wgpu::RenderPipeline,
     window: Arc<Window>,
-    vertices: Vec<Vertex>,
-    
+    vertex_buffer: buffers::VertexBuffer, 
 }
 
 impl<'a> State<'a> {
@@ -80,7 +63,7 @@ impl<'a> State<'a> {
 
         surface.configure(&device, &config);
 
-        let shader = device.create_shader_module(wgpu::include_wgsl!("shader.wgsl"));
+        let shader = device.create_shader_module(wgpu::include_wgsl!("shaders/shader.wgsl"));
 
         let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
             label: None,
@@ -95,7 +78,7 @@ impl<'a> State<'a> {
                 module: &shader,
                 entry_point: Some("vs_main"),
                 compilation_options: Default::default(),
-                buffers: &[Vertex::LAYOUT],
+                buffers: &[buffers::VertexBuffer::LAYOUT],
             },
             fragment: Some(wgpu::FragmentState {
                 module: &shader,
@@ -122,7 +105,7 @@ impl<'a> State<'a> {
             size,
             render_pipeline,
             window,
-            vertices: State::get_vertices(),
+            vertex_buffer: State::get_vertexbuffer(),
         } 
     }
 
@@ -161,13 +144,13 @@ impl<'a> State<'a> {
 
             let vertex_buffer = self.device.create_buffer_init(&wgpu::util::BufferInitDescriptor{
                 label: Some("Vertex Buffer"),
-                contents: bytemuck::cast_slice(&self.vertices),
+                contents: bytemuck::cast_slice(&self.vertex_buffer.get_vertices()),
                 usage: wgpu::BufferUsages::VERTEX,
             });
 
             render_pass.set_vertex_buffer(0, vertex_buffer.slice(..));
             render_pass.set_pipeline(&self.render_pipeline);
-            render_pass.draw(0..self.vertices.len() as u32, 0..1);
+            render_pass.draw(0..self.vertex_buffer.get_vertices().len() as u32, 0..1);
         }
 
         self.queue.submit(Some(encoder.finish()));
@@ -177,17 +160,15 @@ impl<'a> State<'a> {
     }
 
     fn update(&mut self) {
-        for vertex in &mut self.vertices {
-            vertex.pos = [random::<f32>() * 2.0 - 1.0, random::<f32>() * 2.0 - 1.0]; 
-        }
+       self.vertex_buffer.update();
     }
 
-    fn get_vertices() -> Vec<Vertex> {
-        vec![
-            Vertex{pos: [1.0, 0.0], color: [1.0, 0.0, 0.0, 1.0]},
-            Vertex{pos: [-0.5, -0.5], color: [0.0, 1.0, 0.0, 1.0]},
-            Vertex{pos: [0.5, -0.5], color: [0.0, 0.0, 1.0, 1.0]},
-        ]
+    fn get_vertexbuffer() -> buffers::VertexBuffer {
+        let mut vertex_buffer: buffers::VertexBuffer = buffers::VertexBuffer::new(); 
+        for _i in 0..=2 {
+            vertex_buffer.add_vertex(buffers::Vertex::new());
+        }
+        vertex_buffer
     }
 }
 
