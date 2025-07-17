@@ -40,8 +40,8 @@ impl VertexBuffer {
         self.vertices.append(&mut vec);
     }
 
-    pub fn get_vertices(&mut self) -> Vec<Vertex> {
-        self.vertices.clone()
+    pub fn get_vertices(&mut self) -> &Vec<Vertex> {
+        &self.vertices
     }
 
     pub fn update(&mut self){
@@ -70,7 +70,7 @@ impl VertexBuffer {
 }
 
 pub struct IndexBuffer{
-    indices: Vec<i32>,
+    indices: Vec<u32>,
 }
 
 impl IndexBuffer{
@@ -80,7 +80,11 @@ impl IndexBuffer{
         }
     }
 
-    pub fn add_index(&mut self, mut index: i32) {
+    pub fn add_index(&mut self, mut index: u32) {
         self.indices.append(&mut vec![index]);
+    }
+
+    pub fn get_indices(&mut self) -> &Vec<u32> {
+       &self.indices
     }
 }

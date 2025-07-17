@@ -147,9 +147,16 @@ impl<'a> State<'a> {
                 usage: wgpu::BufferUsages::VERTEX,
             });
 
+            let index_buffer = self.device.create_buffer_init(&wgpu::util::BufferInitDescriptor{
+                label: Some("Index Buffer"),
+                contents: bytemuck::cast_slice(&self.mesh.ib().get_indices()),
+                usage: wgpu::BufferUsages::INDEX,
+            });
+
             render_pass.set_vertex_buffer(0, vertex_buffer.slice(..));
+            render_pass.set_index_buffer(index_buffer.slice(..), wgpu::IndexFormat::Uint32);
             render_pass.set_pipeline(&self.render_pipeline);
-            render_pass.draw(0..self.mesh.vb().get_vertices().len() as u32, 0..1);
+            render_pass.draw_indexed(0..self.mesh.ib().get_indices().len() as u32, 0, 0..1);
         }
 
         self.queue.submit(Some(encoder.finish()));
@@ -164,9 +171,16 @@ impl<'a> State<'a> {
 
     fn get_mesh() -> mesh::Mesh {
         let mut mesh: mesh::Mesh = mesh::Mesh::new(); 
-        for _i in 0..=2 {
+        for i in 0..4 {
             mesh.vb().add_vertex(buffers::Vertex::new());
         }
+
+        mesh.ib().add_index(0);
+        mesh.ib().add_index(1);
+        mesh.ib().add_index(2);
+        mesh.ib().add_index(0);
+        mesh.ib().add_index(1);
+        mesh.ib().add_index(3);
         mesh
     }
 }
