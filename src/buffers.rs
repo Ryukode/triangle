@@ -1,10 +1,17 @@
 use rand::random;
+use std::{fmt};
 
 #[repr(C)]
 #[derive(Copy, Clone, bytemuck::Pod, bytemuck::Zeroable)]
 pub struct Vertex {
     pos: [f32; 2],
     color: [f32; 4],
+}
+
+impl fmt::Display for Vertex{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Vertex: x: {}, y: {}, r: {}, g: {}, b: {}, a: {}", self.pos[0], self.pos[1], self.color[0], self.color[1], self.color[2], self.color[3])
+    }
 }
 
 impl Vertex {
@@ -22,10 +29,24 @@ impl Vertex {
     pub fn set_color(&mut self, color: [f32; 4]) {
         self.color = color;
     }
+
+    pub fn _get_position(&mut self) -> [f32; 2]{
+        self.pos
+    } 
 }
 
 pub struct VertexBuffer {
     vertices: Vec<Vertex>
+}
+
+impl fmt::Display for VertexBuffer {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "VertexBuffer [")?;
+        for vertex in &self.vertices {
+            writeln!(f, "{}", vertex)?;
+        }
+        write!(f, "]")
+    }
 }
 
 impl VertexBuffer {
@@ -73,6 +94,16 @@ pub struct IndexBuffer{
     indices: Vec<u32>,
 }
 
+impl fmt::Display for IndexBuffer {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "IndexBuffer [")?;
+        for index in &self.indices {
+            writeln!(f, "{}", index)?;
+        }
+        write!(f, "]")
+    }
+}
+
 impl IndexBuffer{
     pub fn new() -> Self {
         Self {
@@ -80,7 +111,7 @@ impl IndexBuffer{
         }
     }
 
-    pub fn add_index(&mut self, mut index: u32) {
+    pub fn add_index(&mut self, index: u32) {
         self.indices.append(&mut vec![index]);
     }
 

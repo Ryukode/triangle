@@ -1,5 +1,6 @@
 mod buffers;
 mod mesh;
+mod model;
 
 use std::sync::Arc;
 
@@ -18,7 +19,7 @@ struct State<'a> {
     size: winit::dpi::PhysicalSize<u32>,
     render_pipeline: wgpu::RenderPipeline,
     window: Arc<Window>,
-    mesh: mesh::Mesh, 
+    model: model::Model,
 }
 
 impl<'a> State<'a> {
@@ -104,7 +105,7 @@ impl<'a> State<'a> {
             size,
             render_pipeline,
             window,
-            mesh: State::get_mesh(),    
+            model: State::load_model(),    
         } 
     }
 
@@ -143,20 +144,20 @@ impl<'a> State<'a> {
 
             let vertex_buffer = self.device.create_buffer_init(&wgpu::util::BufferInitDescriptor{
                 label: Some("Vertex Buffer"),
-                contents: bytemuck::cast_slice(&self.mesh.vb().get_vertices()),
+                contents: bytemuck::cast_slice(&self.model.get_vertices()),
                 usage: wgpu::BufferUsages::VERTEX,
             });
 
             let index_buffer = self.device.create_buffer_init(&wgpu::util::BufferInitDescriptor{
                 label: Some("Index Buffer"),
-                contents: bytemuck::cast_slice(&self.mesh.ib().get_indices()),
+                contents: bytemuck::cast_slice(&self.model.get_indices()),
                 usage: wgpu::BufferUsages::INDEX,
             });
 
             render_pass.set_vertex_buffer(0, vertex_buffer.slice(..));
             render_pass.set_index_buffer(index_buffer.slice(..), wgpu::IndexFormat::Uint32);
             render_pass.set_pipeline(&self.render_pipeline);
-            render_pass.draw_indexed(0..self.mesh.ib().get_indices().len() as u32, 0, 0..1);
+            render_pass.draw_indexed(0..self.model.get_indices().len() as u32, 0, 0..1);
         }
 
         self.queue.submit(Some(encoder.finish()));
@@ -166,22 +167,14 @@ impl<'a> State<'a> {
     }
 
     fn update(&mut self) {
-       self.mesh.vb().update();
+       self.model.update();
     }
 
-    fn get_mesh() -> mesh::Mesh {
-        let mut mesh: mesh::Mesh = mesh::Mesh::new(); 
-        for i in 0..4 {
-            mesh.vb().add_vertex(buffers::Vertex::new());
-        }
-
-        mesh.ib().add_index(0);
-        mesh.ib().add_index(1);
-        mesh.ib().add_index(2);
-        mesh.ib().add_index(0);
-        mesh.ib().add_index(1);
-        mesh.ib().add_index(3);
-        mesh
+    fn load_model() -> model::Model {
+        let mut model: model::Model = model::Model::new();
+        let _ = model.load_obj("assets/test.obj");
+        println!("{}", model);
+        model
     }
 }
 

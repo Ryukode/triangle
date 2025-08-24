@@ -1,8 +1,18 @@
 use crate::buffers;
+use std::fmt;
 
 pub struct Mesh {
     vb: buffers::VertexBuffer,
     ib: buffers::IndexBuffer,
+}
+
+impl fmt::Display for Mesh {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "Mesh [")?;
+        writeln!(f, "{}", self.vb)?;
+        writeln!(f, "{}", self.ib)?;
+        writeln!(f, "]")
+    }
 }
 
 impl Mesh {

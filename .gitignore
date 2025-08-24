@@ -6,5 +6,8 @@
 *.swp
 *.swo
 
+# Assets
+assets/*
+
 # Cargo specific
 Cargo.lock
