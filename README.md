@@ -1,4 +1,11 @@
 # i am loving this language
 
-## Running the triangle
-to run, simply fork the project and run command "cargo run" at the project root
+## what can you do with triangle?
+you can render wavefront (.obj) files
+
+## Running triangle
+1. fork project
+2. in terminal, type "cargo run *filepath.obj*". the filepath is relative to the project root
+3. have fun hopefully
+
+
