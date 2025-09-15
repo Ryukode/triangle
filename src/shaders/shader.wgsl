@@ -8,6 +8,13 @@ struct VertexOutput {
     @location(0) frag_color: vec4<f32>,
 };
 
+struct Uniforms {
+    m_mvp: mat4x4<f32>,
+    time: f32,
+}
+
+@group(0) @binding(0) var<uniform> uniforms: Uniforms;
+
 @vertex
 fn vs_main(input: VertexInput) -> VertexOutput {
     var out: VertexOutput;

@@ -41,9 +41,11 @@ impl Model {
                 }
                 "f" => {
                     for index in values.split(' ') {
-                        self.mesh.ib().add_index(index.parse::<u32>().unwrap() - 1);
+                        for index2 in index.split('/') {
+                            self.mesh.ib().add_index(index2.parse::<u32>().unwrap() - 1);
+                            
+                        }
                     }
-                    
                 }
                 _ => {}
             }

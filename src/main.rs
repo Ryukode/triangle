@@ -1,7 +1,10 @@
 mod buffers;
 mod mesh;
 mod model;
+mod matrix;
+mod camera;
 
+use std::env;
 use std::sync::Arc;
 
 use wgpu::util::DeviceExt;
@@ -33,7 +36,7 @@ impl<'a> State<'a> {
 
         let window : Arc<Window> = Arc::new(event_loop.create_window(window_attributes).unwrap());
 
-        window.set_title("new");
+        window.set_title("triangle");
         let surface = instance.create_surface(window.clone()).expect("Failed to create surface!");
 
         let size = window.inner_size();
@@ -172,7 +175,8 @@ impl<'a> State<'a> {
 
     fn load_model() -> model::Model {
         let mut model: model::Model = model::Model::new();
-        let _ = model.load_obj("assets/test.obj");
+        let args: Vec<String> = env::args().collect();
+        let _ = model.load_obj(&args[1]);
         println!("{}", model);
         model
     }
