@@ -7,7 +7,7 @@
 *.swo
 
 # Assets
-assets/*
+# assets/*
 
 # Cargo specific
 Cargo.lock

@@ -1,9 +1,11 @@
+use crate::matrix::Matrix4;
 use crate::mesh::Mesh;
 use crate::buffers;
 use std::{fmt, fs};
 
 pub struct Model {
     mesh: Mesh,
+    transform: Matrix4,
     //texture
     //AABB
 }
@@ -20,6 +22,7 @@ impl Model {
     pub fn new() -> Self {
         Self {
             mesh: Mesh::new(),
+            transform: Matrix4::identity(),
         }
     }
 
@@ -61,7 +64,23 @@ impl Model {
         &self.mesh.vb().get_vertices()
     }
 
+    pub fn get_transform(self) -> Matrix4 {
+        self.transform
+    }
+
+    pub fn set_position(&mut self, x: f32, y: f32, z: f32) {
+        let t: Matrix4 = Matrix4::translate(x, y, z);
+        self.transform = t;
+    }
+
+    pub fn set_scale(&mut self, x: f32, y: f32, z: f32) {
+        let s: Matrix4 = Matrix4::scale(x, y, z);
+        self.transform = s;
+    }
+
     pub fn update(&mut self) {
         self.mesh.vb().update();
     }
+
+    
 }
