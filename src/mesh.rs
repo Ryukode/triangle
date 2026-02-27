@@ -1,9 +1,19 @@
 use crate::buffers;
 use std::fmt;
+use crate::buffers::{IndexBuffer, VertexBuffer};
 
 pub struct Mesh {
-    vb: buffers::VertexBuffer,
-    ib: buffers::IndexBuffer,
+    pub vb: VertexBuffer,
+    pub ib: IndexBuffer,
+}
+
+impl Mesh {
+    pub fn new(vb: VertexBuffer, ib: IndexBuffer) -> Self {
+        Self {
+            vb,
+            ib
+        }
+    }
 }
 
 impl fmt::Display for Mesh {
@@ -15,19 +25,11 @@ impl fmt::Display for Mesh {
     }
 }
 
-impl Mesh {
-    pub fn new() -> Self {
+impl Default for Mesh {
+    fn default() -> Self {
         Self {
-            vb: buffers::VertexBuffer::new(),
-            ib: buffers::IndexBuffer::new(),
+            vb: VertexBuffer::new(),
+            ib: IndexBuffer::new()
         }
-    }
-
-    pub fn vb(&mut self) -> &mut buffers::VertexBuffer {
-        &mut self.vb
-    }
-
-    pub fn ib(&mut self) -> &mut buffers::IndexBuffer {
-        &mut self.ib
     }
 }

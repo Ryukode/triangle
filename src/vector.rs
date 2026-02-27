@@ -47,6 +47,16 @@ impl Vector3<f32> {
 
         res
     }
+
+    pub fn as_vec(&self) -> Vec<f32>{
+        let mut v: Vec<f32> = Vec::new();
+
+        v.push(self.x);
+        v.push(self.y);
+        v.push(self.z);
+
+        v
+    }
 }
 
 impl Default for Vector3<f32> {

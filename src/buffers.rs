@@ -1,10 +1,11 @@
 use rand::random;
 use std::{fmt};
-use crate::matrix::Matrix4;
 
 #[derive(Copy, Clone)]
 pub struct Vertex {
     pos: [f32; 3],
+    normal: [f32; 3],
+    uv: [f32; 2],
     color: [f32; 4],
 }
 
@@ -15,27 +16,14 @@ impl fmt::Display for Vertex{
 }
 
 impl Vertex {
-    pub fn new() -> Self {
-        Self{
-            pos: [0.0, 0.0, 0.0],
-            color: [1.0, 1.0, 1.0, 1.0],
+    pub fn new(pos: [f32; 3], normal: [f32; 3], uv: [f32; 2], color: [f32; 4]) -> Self {
+        Self {
+            pos, normal, uv, color
         }
     }
 
-    pub fn set_position(&mut self, pos: [f32; 3]) {
-        self.pos = pos;
-    }
-
-    pub fn set_color(&mut self, color: [f32; 4]) {
-        self.color = color;
-    }
-
-    pub fn _get_position(&mut self) -> [f32; 3]{
-        self.pos
-    }
-
     pub fn as_vec(&self) -> Vec<f32> {
-        let a = [self.pos.to_vec(),self.color.to_vec()].concat();
+        let a = [self.pos.to_vec(),self.normal.to_vec(), self.uv.to_vec(), self.color.to_vec()].concat();
         a
     }
 }
@@ -66,11 +54,7 @@ impl VertexBuffer {
         self.vertices.append(&mut vec);
     }
 
-    pub fn get_vertices(&mut self) -> &Vec<Vertex> {
-        &self.vertices
-    }
-
-    pub fn as_vec(&self) -> Vec<f32> {
+    pub fn get_vertices(&self) -> Vec<f32> {
         let mut verts = vec![];
         for v in &self.vertices[..] {
             verts = [verts, v.as_vec()].concat()
@@ -78,28 +62,14 @@ impl VertexBuffer {
         verts
     }
 
-    pub fn update(&mut self){
-        for vertex in &mut self.vertices {
-            vertex.set_position([
-                random::<f32>() * 2.0 - 1.0,
-                random::<f32>() * 2.0 - 1.0,
-                random::<f32>() * 2.0 - 1.0
-            ]); 
-            vertex.set_color([
-                random::<f32>(),
-                random::<f32>(),
-                random::<f32>(),
-                random::<f32>(),
-            ]);
-        }
-    }
-
     pub const LAYOUT: wgpu::VertexBufferLayout<'static> = wgpu::VertexBufferLayout {
         array_stride: size_of::<Vertex>() as wgpu::BufferAddress,
         step_mode: wgpu::VertexStepMode::Vertex,
         attributes: &wgpu::vertex_attr_array![
             0 => Float32x3,
-            1 => Float32x4,
+            1 => Float32x3,
+            2 => Float32x2,
+            3 => Float32x4,
         ],
     };
 }
@@ -129,30 +99,7 @@ impl IndexBuffer {
         self.indices.append(&mut vec![index]);
     }
 
-    pub fn get_indices(&mut self) -> &Vec<u32> {
-       &self.indices
-    }
-}
-
-pub struct UniformBuffer {
-    m_model: Matrix4,
-    m_view: Matrix4,
-    m_projection: Matrix4,
-    time: Vec<f32>,
-}
-
-impl UniformBuffer {
-    pub fn new(model: Matrix4, view: Matrix4, projection: Matrix4) -> Self {
-        Self {
-            m_model: model,
-            m_view: view,
-            m_projection: projection,
-            time: vec![1., 1., 1., 1.],
-        }
-    }
-
-    pub fn as_vec(&self) -> Vec<f32> {
-        let a = [self.m_model.as_vec(), self.m_view.as_vec(), self.m_projection.as_vec(), self.time.clone()].concat();
-        a
+    pub fn get_indices(&self) -> Vec<u32> {
+       self.indices.clone()
     }
 }
