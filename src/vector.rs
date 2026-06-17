@@ -1,4 +1,4 @@
-use std::ops::{Add, Div, Mul, Sub};
+use std::ops::{Add, AddAssign, Div, Mul, Sub};
 
 #[derive(Copy, Clone, PartialEq)]
 pub struct Vector3<T> {
@@ -93,6 +93,15 @@ impl Add<f32> for Vector3<f32> {
 
         res
     }
+}
+
+impl AddAssign<f32> for Vector3<f32> {
+    fn add_assign(&mut self, rhs: f32) {
+        self.x += rhs;
+        self.y += rhs;
+        self.z += rhs;
+    }
+
 }
 
 impl Sub for Vector3<f32> {

@@ -72,6 +72,21 @@ impl Matrix4{
         }
     }
 
+    pub fn from_values(
+        m00: f32, m10: f32, m20: f32, m30: f32, 
+        m01: f32, m11: f32, m21: f32, m31: f32, 
+        m02: f32, m12: f32, m22: f32, m32: f32, 
+        m03: f32, m13: f32, m23: f32, m33: f32,
+        ) -> Matrix4 {
+
+        Self { 
+            m00, m10, m20, m30, 
+            m01, m11, m21, m31, 
+            m02, m12, m22, m32, 
+            m03, m13, m23, m33,
+        }
+    }
+
     pub fn identity() -> Matrix4 {
         Self {
             m00: 1., m10: 0., m20: 0., m30: 0.,

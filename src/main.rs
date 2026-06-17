@@ -4,6 +4,7 @@ mod model;
 mod matrix;
 mod camera;
 mod vector;
+mod quaternion;
 mod transform;
 mod color;
 mod shader;
@@ -23,6 +24,7 @@ use winit::window::{Window, WindowId};
 use crate::model::Model;
 use crate::camera::Camera;
 use crate::color::Color;
+use crate::quaternion::Quaternion;
 use crate::shader::{AnyShader, BaseShader, PhongShader, FlatShader};
 use crate::vector::Vector3;
 
@@ -271,7 +273,7 @@ impl App<'_> {
         let mut model: Model = Model::default();
         let args: Vec<String> = env::args().collect();
         if args.len() <= 1{
-            let _ = model.load_obj("Assets/pawn.obj");
+                let _ = model.load_obj("assets/cube.obj");
         }
         else {
             let _ = model.load_obj(&args[1]);
@@ -287,6 +289,13 @@ impl App<'_> {
 
     fn update(&mut self) {
         self.handle_key_event();
+        let model: &mut Model = self.models.get_mut(0).unwrap();
+
+        let quat: Quaternion = model.transform.get_rot();
+        //let q: Quaternion = Quaternion::from_euler_angles(0.0, 0.01, 0.01);
+        let q: Quaternion = Quaternion::from_angle_axis(0.1, Vector3 { x: 1.0, y: 1.0, z: 1.0});
+
+        model.transform.set_rot(quat * q);
     }
 
     fn draw(&mut self) {

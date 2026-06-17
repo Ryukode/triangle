@@ -48,6 +48,6 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
     let h = 0.5 * (e - uniforms.light_dir);
     let s = pow(max(0, dot(normalize(input.normal.xyz), normalize(h))), 15);
 
-    let col = uniforms.ambient + d * uniforms.diffuse + s * uniforms.specular;
+    let col = input.normal + d * uniforms.diffuse + s * uniforms.specular;
     return col;
 }
