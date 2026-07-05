@@ -1,5 +1,3 @@
-use std::fs;
-use wgpu::{include_wgsl, ShaderModuleDescriptor};
 use crate::camera::Camera;
 use crate::color::Color;
 use crate::model::Model;
@@ -64,8 +62,8 @@ impl BaseShader for PhongShader {
             self.ambient.as_vec(),
             self.diffuse.as_vec(),
             self.specular.as_vec(),
-            model.transform.get_transform().as_vec(), 
-            cam.transform.get_transform().as_vec(), 
+            model.transform.as_matrix().as_vec(), 
+            cam.transform.as_matrix().as_vec(), 
             cam.get_projection_matrix().as_vec(),
             self.light_direction.as_vec(),
             vec![0.],
@@ -118,7 +116,7 @@ impl BaseShader for FlatShader {
     }
 
     fn as_vec(&self, model: &Model, cam: &Camera) -> Vec<f32> {
-        let v = [model.transform.get_transform().as_vec(), cam.transform.get_transform().as_vec(), cam.get_projection_matrix().as_vec()].concat();
+        let v = [model.transform.as_matrix().as_vec(), cam.transform.as_matrix().as_vec(), cam.get_projection_matrix().as_vec()].concat();
         v
     }
 }

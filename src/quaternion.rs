@@ -163,7 +163,7 @@ impl MulAssign for Quaternion {
         self.w = self.w * rhs.w - self.i * rhs.i - self.j * rhs.j - self.k * rhs.k;
         self.i = self.w * rhs.i + self.i * rhs.w + self.j * rhs.k - self.k * rhs.j;
         self.j = self.w * rhs.j - self.i * rhs.k + self.j * rhs.w + self.k * rhs.i;
-        self.k = self.w * rhs.k + self.i * rhs.j - self.j * rhs.i + self.k * rhs.k;
+        self.k = self.w * rhs.k + self.i * rhs.j - self.j * rhs.i + self.k * rhs.w;
     }
 }
 

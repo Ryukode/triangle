@@ -291,11 +291,12 @@ impl App<'_> {
         self.handle_key_event();
         let model: &mut Model = self.models.get_mut(0).unwrap();
 
-        let quat: Quaternion = model.transform.get_rot();
-        //let q: Quaternion = Quaternion::from_euler_angles(0.0, 0.01, 0.01);
-        let q: Quaternion = Quaternion::from_angle_axis(0.1, Vector3 { x: 1.0, y: 1.0, z: 1.0});
+        let quat: Quaternion = model.transform.get_rotation();
+        let q: Quaternion = Quaternion::from_angle_axis(0.03, Vector3 { x: 0.0, y: 0.0, z: 1.0});
 
-        model.transform.set_rot(quat * q);
+        model.transform.set_rotation(quat * q);
+
+        //self.camera.transform.look_at(model.transform.get_position(), Vector3::up());
     }
 
     fn draw(&mut self) {

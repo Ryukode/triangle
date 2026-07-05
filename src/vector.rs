@@ -57,6 +57,14 @@ impl Vector3<f32> {
 
         v
     }
+
+    pub fn up() -> Vector3<f32>{ Vector3 { x: 0.0, y: 1.0, z: 0.0 } }
+    pub fn down() -> Vector3<f32>{ Vector3 { x: 0.0, y: -1.0, z: 0.0 } }
+    pub fn right() -> Vector3<f32>{ Vector3 { x: 1.0, y: 0.0, z: 0.0 } }
+    pub fn left() -> Vector3<f32>{ Vector3 { x: -1.0, y: 0.0, z: 0.0 } }
+    pub fn forward() -> Vector3<f32>{ Vector3 { x: 0.0, y: 0.0, z: 1.0 } }
+    pub fn backward() -> Vector3<f32>{ Vector3 { x: 0.0, y: 0.0, z: -1.0 } }
+    
 }
 
 impl Default for Vector3<f32> {
