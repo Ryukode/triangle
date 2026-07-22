@@ -6,13 +6,14 @@ use crate::buffers::{IndexBuffer, Vertex, VertexBuffer};
 use crate::camera::Camera;
 use crate::color::Color;
 use crate::shader::{AnyShader, BaseShader, PhongShader};
-use crate::vector::Vector3;
+use crate::math::vector::Vector3;
+use crate::texture::Texture;
 
 pub struct Model {
-    mesh: Mesh,
     pub transform: Transform,
+    mesh: Mesh,
+    texture: Texture,
     shader: AnyShader,
-    //texture
     //AABB
 }
 
@@ -122,7 +123,8 @@ impl Default for Model {
         Self {
             mesh: Mesh::default(),
             transform: Transform::default(),
-            shader: AnyShader::PhongShader(PhongShader::default())
+            shader: AnyShader::PhongShader(PhongShader::default()),
+            texture: Texture::default(),
         }
     }
 }

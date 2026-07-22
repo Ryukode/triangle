@@ -1,6 +1,6 @@
-use crate::matrix::Matrix4;
-use crate::vector::Vector3;
-use crate::quaternion::Quaternion;
+use crate::math::matrix::Matrix4;
+use crate::math::vector::Vector3;
+use crate::math::quaternion::Quaternion;
 
 pub struct Transform {
     position: Vector3<f32>,

@@ -1,7 +1,7 @@
 use crate::camera::Camera;
 use crate::color::Color;
 use crate::model::Model;
-use crate::vector::Vector3;
+use crate::math::vector::Vector3;
 
 pub enum AnyShader {
     FlatShader(FlatShader),
@@ -41,9 +41,9 @@ impl BaseShader for AnyShader {
 }
 
 pub struct PhongShader {
-    ambient: Color,
-    diffuse: Color,
-    specular: Color,
+    ambient: Color<f32>,
+    diffuse: Color<f32>,
+    specular: Color<f32>,
     light_direction: Vector3<f32>,
     eye_pos: Vector3<f32>,
 }
@@ -74,13 +74,13 @@ impl BaseShader for PhongShader {
 }
 
 impl PhongShader {
-    pub fn set_ambient(&mut self, ambient: Color) {
+    pub fn set_ambient(&mut self, ambient: Color<f32>) {
         self.ambient = ambient;
     }
-    pub fn set_diffuse(&mut self, diffuse: Color) {
+    pub fn set_diffuse(&mut self, diffuse: Color<f32>) {
         self.diffuse = diffuse;
     }
-    pub fn set_specular(&mut self, specular: Color) {
+    pub fn set_specular(&mut self, specular: Color<f32>) {
         self.specular = specular;
     }
     pub fn set_light_dir(&mut self, dir: Vector3<f32>) {
@@ -103,8 +103,7 @@ impl Default for PhongShader {
     }
 }
 
-pub struct FlatShader {
-}
+pub struct FlatShader;
 
 impl BaseShader for FlatShader {
     fn activate(&self) {

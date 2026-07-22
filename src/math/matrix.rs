@@ -1,6 +1,6 @@
 use std::ops::{self, Index, IndexMut};
 use std::f32;
-use crate::vector::Vector3;
+use crate::math::vector::Vector3;
 
 #[derive(Copy, Clone)]
 pub struct Matrix4 {

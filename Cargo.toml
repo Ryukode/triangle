@@ -5,6 +5,7 @@ edition = "2024"
 
 [dependencies]
 bytemuck = "1.23.1"
+inflate = "=0.4.5"
 pollster = "0.4.0"
 rand = "0.9.1"
 wgpu = "27.0.1"

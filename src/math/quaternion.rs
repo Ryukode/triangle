@@ -1,6 +1,7 @@
 use std::ops::{Div, DivAssign, Mul, MulAssign};
 
-use crate::{matrix::Matrix4, vector::Vector3};
+use crate::math::matrix::Matrix4;
+use crate::math::vector::Vector3;
 
 #[derive(Clone, Copy)]
 pub struct Quaternion{

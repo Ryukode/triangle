@@ -46,7 +46,7 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
     //specular
     let e = uniforms.eye_pos - input.position.xyz;
     let h = 0.5 * (e - uniforms.light_dir);
-    let s = pow(max(0, dot(normalize(input.normal.xyz), normalize(h))), 15);
+    let s = pow(max(0, dot(normalize(input.normal.xyz), normalize(h))), 5);
 
     let col = input.frag_color + d * uniforms.diffuse + s * uniforms.specular;
     return col;

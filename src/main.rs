@@ -1,18 +1,19 @@
 mod buffers;
 mod mesh;
 mod model;
-mod matrix;
 mod camera;
-mod vector;
-mod quaternion;
 mod transform;
 mod color;
 mod shader;
+mod texture;
+mod util;
+mod math;
 
-use std::env;
+use std::{env, fs};
 use std::f32::consts::PI;
+use std::io::Read;
 use std::sync::Arc;
-use wgpu::{include_wgsl, BindGroupLayout, Face, FrontFace, PrimitiveTopology, RenderPipeline, ShaderModuleDescriptor, ShaderSource};
+use wgpu::{include_wgsl, BindGroupLayout, FrontFace, PrimitiveTopology, RenderPipeline};
 use wgpu::Face::Back;
 use wgpu::PolygonMode::Fill;
 use wgpu::util::DeviceExt;
@@ -24,9 +25,10 @@ use winit::window::{Window, WindowId};
 use crate::model::Model;
 use crate::camera::Camera;
 use crate::color::Color;
-use crate::quaternion::Quaternion;
-use crate::shader::{AnyShader, BaseShader, PhongShader, FlatShader};
-use crate::vector::Vector3;
+use math::quaternion::Quaternion;
+use crate::shader::{BaseShader, FlatShader, PhongShader};
+use math::vector::Vector3;
+use crate::util::filestream::FileStream;
 
 struct State<'a> {
     surface: wgpu::Surface<'a>,
@@ -44,11 +46,11 @@ impl<'a> State<'a> {
 
         let instance = wgpu::Instance::default();
 
-        let window_attributes = Window::default_attributes().with_title("resumed");
+        let window_attributes = Window::default_attributes();
 
         let window : Arc<Window> = Arc::new(event_loop.create_window(window_attributes).unwrap());
 
-        window.set_title("triangle");
+        //window.set_title("triangle");
         let surface = instance.create_surface(window.clone()).expect("Failed to create surface!");
 
         let size = window.inner_size();
@@ -100,7 +102,7 @@ impl<'a> State<'a> {
             push_constant_ranges: &[],
         });
 
-        let shader = device.create_shader_module(include_wgsl!("shaders/phong.wgsl"));
+        let shader = device.create_shader_module(include_wgsl!("../assets/shaders/phong.wgsl"));
 
         let render_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: Some("Triangle Pipeline"),
@@ -273,7 +275,7 @@ impl App<'_> {
         let mut model: Model = Model::default();
         let args: Vec<String> = env::args().collect();
         if args.len() <= 1{
-                let _ = model.load_obj("assets/cube.obj");
+                let _ = model.load_obj("assets/models/cube.obj");
         }
         else {
             let _ = model.load_obj(&args[1]);
@@ -285,6 +287,20 @@ impl App<'_> {
     fn start(&mut self) {
         self.models[0].transform.set_position(Vector3::new(0., 0., 0.));
         self.camera.transform.set_position(Vector3::new(0., 0.,-5.));
+
+        let mut fd = fs::File::open("assets/txt/hi.txt").unwrap();
+        let mut buf = [0;1];
+        fd.read(&mut buf).unwrap();
+        println!("{}", String::from_utf8_lossy(&buf));
+
+        let mut fs: FileStream = FileStream::new(fd);
+
+        let mut buf2= [false; 1];
+        let num_bits = 10;
+        for i in 0..num_bits {
+            fs.read_bits(&mut buf2);
+            println!("{}", buf2[0]);
+        }
     }
 
     fn update(&mut self) {
@@ -292,11 +308,11 @@ impl App<'_> {
         let model: &mut Model = self.models.get_mut(0).unwrap();
 
         let quat: Quaternion = model.transform.get_rotation();
-        let q: Quaternion = Quaternion::from_angle_axis(0.03, Vector3 { x: 0.0, y: 0.0, z: 1.0});
+        let q: Quaternion = Quaternion::from_angle_axis(0.03, Vector3 { x: 1.0, y: 1.0, z: 1.0});
 
         model.transform.set_rotation(quat * q);
 
-        //self.camera.transform.look_at(model.transform.get_position(), Vector3::up());
+        self.camera.transform.look_at(model.transform.get_position(), Vector3::up());
     }
 
     fn draw(&mut self) {
@@ -305,9 +321,9 @@ impl App<'_> {
         let flat = FlatShader::default();
 
         let mut phong = PhongShader::default();
-        phong.set_ambient(Color::new(1., 0., 0., 1.));
-        phong.set_diffuse(Color::new(1., 0., 0., 1.));
-        phong.set_specular(Color::new(1., 1., 1., 1.));
+        phong.set_ambient(Color { r: 1., g: 0., b: 0., a: 1. });
+        phong.set_diffuse(Color { r: 1., g: 0., b: 0., a: 1. });
+        phong.set_specular(Color { r: 1., g: 1., b: 1., a: 1. });
         phong.set_eye_pos(self.camera.transform.get_position());
         phong.set_light_dir(Vector3::new(-1., -1., 1.));
 

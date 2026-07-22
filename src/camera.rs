@@ -1,4 +1,4 @@
-use crate::matrix::Matrix4;
+use crate::math::matrix::Matrix4;
 use crate::transform::Transform;
 
 pub struct Camera {
