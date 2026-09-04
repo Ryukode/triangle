@@ -23,7 +23,11 @@ impl Vertex {
     }
 
     pub fn as_vec(&self) -> Vec<f32> {
-        let a = [self.pos.to_vec(),self.normal.to_vec(), self.uv.to_vec(), self.color.to_vec()].concat();
+        let mut a: Vec<f32> = Vec::new();
+        a.append(&mut self.pos.to_vec());
+        a.append(&mut self.normal.to_vec());
+        a.append(&mut self.uv.to_vec());
+        a.append(&mut self.color.to_vec());
         a
     }
 }
@@ -55,11 +59,11 @@ impl VertexBuffer {
     }
 
     pub fn get_vertices(&self) -> Vec<f32> {
-        let mut verts = vec![];
+        let mut vertices = vec![];
         for v in &self.vertices[..] {
-            verts = [verts, v.as_vec()].concat()
+            vertices.append(&mut v.as_vec());
         }
-        verts
+        vertices
     }
 
     pub const LAYOUT: wgpu::VertexBufferLayout<'static> = wgpu::VertexBufferLayout {

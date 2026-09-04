@@ -19,7 +19,7 @@ impl ReadUtils {
         let mut bits = Vec::<bool>::new();
         for byte in bytes {
             for i in 0..8 {
-                bits[i] = (byte >> i) & 1 == 1;
+                bits.push((byte >> i) & 1 == 1);
             }
         }
         bits
@@ -30,6 +30,15 @@ impl ReadUtils {
         for i in 0..bits.len() {
             if bits[i] {
                 result += 2u16.pow(i as u32);
+            }
+        }
+        result
+    }
+    pub fn bits_to_u8(bits: &[bool]) -> u8 {
+        let mut result: u8 = 0;
+        for i in 0..bits.len() {
+            if bits[i] {
+                result += &2u8.pow(i as u32);
             }
         }
         result

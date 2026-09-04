@@ -13,10 +13,11 @@ use std::{env, fs};
 use std::f32::consts::PI;
 use std::io::Read;
 use std::sync::Arc;
-use wgpu::{include_wgsl, BindGroupLayout, FrontFace, PrimitiveTopology, RenderPipeline};
+use wgpu::{include_wgsl, BindGroupEntry, BindGroupLayout, BindingResource, BindingType, Extent3d, FrontFace, PrimitiveTopology, RenderPipeline, SamplerBindingType, ShaderStages, TexelCopyBufferLayout, TexelCopyTextureInfo, TextureDimension, TextureFormat, TextureUsages, TextureViewDimension};
 use wgpu::Face::Back;
 use wgpu::PolygonMode::Fill;
 use wgpu::util::DeviceExt;
+use wgpu::wgc::Label;
 use winit::application::ApplicationHandler;
 use winit::event::{ElementState, KeyEvent, WindowEvent};
 use winit::event_loop::{ActiveEventLoop, ControlFlow, EventLoop};
@@ -28,7 +29,9 @@ use crate::color::Color;
 use math::quaternion::Quaternion;
 use crate::shader::{BaseShader, FlatShader, PhongShader};
 use math::vector::Vector3;
+use crate::texture::Texture;
 use crate::util::filestream::FileStream;
+use crate::util::png::PNG;
 
 struct State<'a> {
     surface: wgpu::Surface<'a>,
@@ -50,11 +53,10 @@ impl<'a> State<'a> {
 
         let window : Arc<Window> = Arc::new(event_loop.create_window(window_attributes).unwrap());
 
-        //window.set_title("triangle");
+        window.set_title("triangle");
         let surface = instance.create_surface(window.clone()).expect("Failed to create surface!");
 
         let size = window.inner_size();
-        
 
         let adapter = instance.request_adapter(&wgpu::RequestAdapterOptions{
             power_preference: wgpu::PowerPreference::HighPerformance,
@@ -68,7 +70,7 @@ impl<'a> State<'a> {
             .unwrap();        
 
         let config = wgpu::SurfaceConfiguration {
-            usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
+            usage: TextureUsages::RENDER_ATTACHMENT,
             format: surface.get_capabilities(&adapter).formats[0],
             width: size.width,
             height: size.height,
@@ -82,27 +84,44 @@ impl<'a> State<'a> {
 
         let uniform_bind_group_layout = device.create_bind_group_layout(
             &wgpu::BindGroupLayoutDescriptor {
-                entries: &[wgpu::BindGroupLayoutEntry {
+                label: Some("uniform_bgl"),
+                entries: &[
+                wgpu::BindGroupLayoutEntry {
                     binding: 0,
-                    visibility: wgpu::ShaderStages::VERTEX | wgpu::ShaderStages::FRAGMENT,
-                    ty: wgpu::BindingType::Buffer {
+                    visibility: ShaderStages::VERTEX | ShaderStages::FRAGMENT,
+                    ty: BindingType::Buffer {
                         ty: wgpu::BufferBindingType::Uniform,
                         has_dynamic_offset: false,
                         min_binding_size: None,
                     },
                     count: None,
+                },
+                wgpu::BindGroupLayoutEntry{
+                    binding: 1,
+                    visibility: ShaderStages::FRAGMENT,
+                    ty: BindingType::Sampler(SamplerBindingType::NonFiltering),
+                    count: None,
+                },
+                wgpu::BindGroupLayoutEntry{
+                    binding: 2,
+                    visibility: ShaderStages::FRAGMENT,
+                    ty: BindingType::Texture {
+                        sample_type: Default::default(),
+                        view_dimension: Default::default(),
+                        multisampled: false,
+                    },
+                    count: None,
                 }],
-                label: Some("uniform_bgl"),
             }
         );
 
         let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-            label: None,
+            label: Some("pipeline_layout"),
             bind_group_layouts: &[&uniform_bind_group_layout],
             push_constant_ranges: &[],
         });
 
-        let shader = device.create_shader_module(include_wgsl!("../assets/shaders/phong.wgsl"));
+        let shader = device.create_shader_module(include_wgsl!("../assets/shaders/texture.wgsl"));
 
         let render_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: Some("Triangle Pipeline"),
@@ -146,7 +165,7 @@ impl<'a> State<'a> {
             size,
             render_pipeline,
             window,
-            uniform_bind_group_layout
+            uniform_bind_group_layout,
         } 
     }
 
@@ -202,14 +221,85 @@ impl<'a> State<'a> {
                 usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
             });
 
+            let sampler = self.device.create_sampler(&wgpu::SamplerDescriptor {
+                label: Some("Sampler"),
+                address_mode_u: Default::default(),
+                address_mode_v: Default::default(),
+                address_mode_w: Default::default(),
+                mag_filter: Default::default(),
+                min_filter: Default::default(),
+                mipmap_filter: Default::default(),
+                lod_min_clamp: 0.0,
+                lod_max_clamp: 0.0,
+                compare: None,
+                anisotropy_clamp: 1,
+                border_color: None,
+            });
+            //let texture = PNG::load_static("assets/sprites/sakura_blossom.png");
+            let texture = Texture::disco(4);
+            let size = Extent3d {
+                width: texture.width(),
+                height: texture.height(),
+                depth_or_array_layers: 1,
+            };
+
+            let tex = self.device.create_texture(&wgpu::TextureDescriptor {
+                label: Some("Texture"),
+                size,
+                mip_level_count: 1,
+                sample_count: 1,
+                dimension: TextureDimension::D2,
+                format: TextureFormat::Rgba8Unorm,
+                usage: TextureUsages::TEXTURE_BINDING | TextureUsages::COPY_DST,
+                view_formats: &[TextureFormat::Rgba8Unorm],
+            });
+
+            self.queue.write_texture(
+                TexelCopyTextureInfo {
+                    texture: &tex,
+                    mip_level: 0,
+                    origin: Default::default(),
+                    aspect: Default::default(),
+                },
+                &texture.img,
+                TexelCopyBufferLayout{
+                    offset: 0,
+                    bytes_per_row: Some(texture.width() * texture.channels()),
+                    rows_per_image: None,
+                },
+                size
+            );
+
+            let view = tex.create_view(&wgpu::TextureViewDescriptor {
+                label: Some("tex_view"),
+                format: Some(TextureFormat::Rgba8Unorm),
+                dimension: Some(TextureViewDimension::D2),
+                usage: Some(TextureUsages::TEXTURE_BINDING | TextureUsages::COPY_DST),
+                aspect: Default::default(),
+                base_mip_level: 0,
+                mip_level_count: None,
+                base_array_layer: 0,
+                array_layer_count: None,
+            });
+
             let uniform_bind_group = self.device.create_bind_group(
                 &wgpu::BindGroupDescriptor {
-                    layout: &self.uniform_bind_group_layout,
-                    entries: &[wgpu::BindGroupEntry {
-                        binding: 0,
-                        resource: uniform_buffer.as_entire_binding(),
-                    }],
                     label: Some("uniform_bg"),
+                    layout: &self.uniform_bind_group_layout,
+                    entries: &[
+                        BindGroupEntry {
+                            binding: 0,
+                            resource: uniform_buffer.as_entire_binding(),
+                        },
+                        BindGroupEntry{
+                            binding: 1,
+                            resource: BindingResource::Sampler(&sampler),
+                        },
+                        BindGroupEntry{
+                            binding: 2,
+                            resource: BindingResource::TextureView(&view),
+                        },
+                    ],
                 }
             );
 
@@ -275,7 +365,7 @@ impl App<'_> {
         let mut model: Model = Model::default();
         let args: Vec<String> = env::args().collect();
         if args.len() <= 1{
-                let _ = model.load_obj("assets/models/cube.obj");
+                let _ = model.load_obj("assets/models/plane.obj");
         }
         else {
             let _ = model.load_obj(&args[1]);
@@ -286,33 +376,16 @@ impl App<'_> {
 
     fn start(&mut self) {
         self.models[0].transform.set_position(Vector3::new(0., 0., 0.));
+        self.models[0].transform.set_rotation()
+        
         self.camera.transform.set_position(Vector3::new(0., 0.,-5.));
-
-        let mut fd = fs::File::open("assets/txt/hi.txt").unwrap();
-        let mut buf = [0;1];
-        fd.read(&mut buf).unwrap();
-        println!("{}", String::from_utf8_lossy(&buf));
-
-        let mut fs: FileStream = FileStream::new(fd);
-
-        let mut buf2= [false; 1];
-        let num_bits = 10;
-        for i in 0..num_bits {
-            fs.read_bits(&mut buf2);
-            println!("{}", buf2[0]);
-        }
     }
 
     fn update(&mut self) {
         self.handle_key_event();
-        let model: &mut Model = self.models.get_mut(0).unwrap();
-
-        let quat: Quaternion = model.transform.get_rotation();
-        let q: Quaternion = Quaternion::from_angle_axis(0.03, Vector3 { x: 1.0, y: 1.0, z: 1.0});
-
-        model.transform.set_rotation(quat * q);
-
-        self.camera.transform.look_at(model.transform.get_position(), Vector3::up());
+        for model in &mut self.models {
+            model.update();
+        }
     }
 
     fn draw(&mut self) {
@@ -328,10 +401,13 @@ impl App<'_> {
         phong.set_light_dir(Vector3::new(-1., -1., 1.));
 
         for i in 0..self.models.len(){
-            s.render(&self.models[i], phong.as_vec(&self.models[i], &self.camera)).expect("Render failed")
+            match s.render(&self.models[i], phong.as_vec(&self.models[i], &self.camera)){
+                Ok(()) => {},
+                Err(e) => {eprintln!("Unable to render. Error: [{}]", e)}
+            }
         }
 
-        s.window.request_redraw();
+        //s.window.request_redraw();
     }
 }
 

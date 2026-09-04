@@ -5,6 +5,7 @@ use std::{fmt, fs};
 use crate::buffers::{IndexBuffer, Vertex, VertexBuffer};
 use crate::camera::Camera;
 use crate::color::Color;
+use crate::math::quaternion::Quaternion;
 use crate::shader::{AnyShader, BaseShader, PhongShader};
 use crate::math::vector::Vector3;
 use crate::texture::Texture;
@@ -45,7 +46,10 @@ impl Model {
 
         for line in data.lines() {
             if line.is_empty() {continue;}
-            let (pattern, values) = line.split_once(' ').unwrap();
+            let (pattern, values) = match line.split_once(' '){
+                Some((pattern, values)) => (pattern, values),
+                None => continue,
+            };
             println!("Pattern: {}, Values: {}", pattern, values);
             match pattern {
                 "v" => {
@@ -84,11 +88,14 @@ impl Model {
                             red);
 
                         vb.add_vertex(vertex);
-                        //ib.add_index(Self::parse_u32(index[0]) - 1);
                         ib.add_index(count);
                         count+=1
                     }
-                }
+                },
+                "mtllib" => {
+                    // Open mtl file and read contents
+                    self.load_mtl(values);
+                },
                 _ => {}
             }
         }
@@ -96,6 +103,13 @@ impl Model {
         self.mesh = Mesh::new(vb, ib);
 
         self
+    }
+
+    fn load_mtl(&mut self, filepath: &str){
+        let fs = fs::read_to_string(filepath).unwrap();
+        for line in fs.lines() {
+            if line.is_empty() {continue;}
+        }
     }
 
     fn parse_f32(value: &str) -> f32 {
@@ -114,7 +128,10 @@ impl Model {
     }
 
     pub fn update(&mut self) {
+        let quat: Quaternion = self.transform.get_rotation();
+        let q: Quaternion = Quaternion::from_angle_axis(0.03, Vector3 { x: 1.0, y: 1.0, z: 1.0});
 
+        self.transform.set_rotation(quat * q);
     }
 }
 

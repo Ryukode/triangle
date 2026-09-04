@@ -37,10 +37,11 @@ impl FileStream {
                             //TODO: Handle!
                         }
                         else {
+                            eprintln!("Unable to read bits from file: {}", n);
                         }
                     },
                     Err(n) => {
-                        print!("Error reading byte from file: {}", n);
+                        eprintln!("Error reading byte from file: {}", n);
                     }
                 }
                 for j in ReadUtils::byte_to_bits(byte_buf[0]) {
@@ -55,7 +56,19 @@ impl FileStream {
     }
     
     pub fn read(&mut self, buf: &mut [u8]){
-        self.fd.read(buf).expect("Error reading file.");
+        match self.fd.read(buf) {
+            Ok(n) => {
+                if 0 == n && n <= buf.len(){
+                    //TODO: Handle!
+                }
+                else {
+                    eprintln!("Unable to read bytes from file: {}", n);
+                }
+            },
+            Err(e) => {
+                eprintln!("Error reading byte from file: {}", e);
+            }
+        }
         self.overflow.clear();
     }
 }

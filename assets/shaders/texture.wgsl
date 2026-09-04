@@ -44,15 +44,7 @@ fn vs_main(input: VertexInput) -> VertexOutput {
 
 @fragment
 fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
-    //var _ = textureSampleBias(t,s,input.position.xy);
     var tex_col = textureSample(t, s, input.tex_coord.xy);
-    //diffuse
-    var d = max(0, dot(normalize(input.normal.xyz), normalize(-uniforms.light_dir)));
-    //specular
-    let e = uniforms.eye_pos - input.position.xyz;
-    let h = 0.5 * (e - uniforms.light_dir);
-    let s = pow(max(0, dot(normalize(input.normal.xyz), normalize(h))), 5);
-
-    let col = tex_col + d * uniforms.diffuse + s * uniforms.specular;
+    let col = tex_col;
     return col;
 }
